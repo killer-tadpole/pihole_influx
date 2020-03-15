@@ -9,6 +9,7 @@
 import requests
 import time
 import uptime
+from gpiozero import CPUTemperature, LoadAverage, DiskUsage
 from influxdb import InfluxDBClient
 
 HOSTNAME = "home" # Pi-hole hostname to report in InfluxDB for each measurement
@@ -19,7 +20,6 @@ INFLUXDB_USERNAME = "root"
 INFLUXDB_PASSWORD = "password"
 INFLUXDB_DATABASE = "home"
 DELAY = 60 # seconds
-
 
 def send_msg(domains_being_blocked, dns_queries_today, ads_percentage_today, ads_blocked_today):
    json_body = [
@@ -33,11 +33,13 @@ def send_msg(domains_being_blocked, dns_queries_today, ads_percentage_today, ads
               "dns_queries_today": int(dns_queries_today),
               "ads_percentage_today": float(ads_percentage_today),
               "ads_blocked_today": int(ads_blocked_today),
-              "uptime": int(uptime.uptime())
+              "uptime": int(uptime.uptime()),
+              "temp": float(CPUTemperature().temperature),
+              "load_average": float(LoadAverage().load_average),
+              "disk_usage": float(DiskUsage().usage)
            }
        }
     ]
-   print(json_body)
    # InfluxDB host, InfluxDB port, Username, Password, database
    client = InfluxDBClient(INFLUXDB_SERVER, INFLUXDB_PORT, INFLUXDB_USERNAME, INFLUXDB_PASSWORD, INFLUXDB_DATABASE) 
 
